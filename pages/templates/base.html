@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}دوره داکر کدینگ‌یار{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐳</text></svg>">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    {% load static %}
+    
+    <style>
+        @font-face {
+            font-family: 'IRANSansX';
+            src: url('{% static "fonts/IRANSansX-Regular.woff" %}') format('woff');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.3);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        {% block extra_css %}{% endblock %}
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'iran-sans': ['IRANSansX', 'Vazirmatn', 'Vazir', 'Tahoma', 'Arial', 'sans-serif'],
+                        'sans': ['IRANSansX', 'Vazirmatn', 'Vazir', 'Tahoma', 'Arial', 'sans-serif'],
+                    },
+                    colors: {
+                        'docker-blue': '#2496ed',
+                        'docker-dark': '#0f4c75',
+                        'docker-light': '#3282b8',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 1s ease-out forwards',
+                        'slide-in-left': 'slideInLeft 0.8s ease-out forwards',
+                        'slide-in-right': 'slideInRight 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideInLeft: {
+                            '0%': { opacity: '0', transform: 'translateX(-50px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        },
+                        slideInRight: {
+                            '0%': { opacity: '0', transform: 'translateX(50px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-iran-sans min-h-screen">
+    {% block navigation %}{% endblock %}
+    
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="fixed bottom-0 left-0 right-0 bg-gray-900 text-center py-4 text-white z-10">
+        <p class="text-sm">
+            طراحی و توسعه با ❤️ توسط محمدهادی حاجی حسینی | 
+            <a href="https://codingyar.com" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 underline">
+                وبسایت کدینگ‌یار
+            </a>
+        </p>
+    </footer>
+    
+    <script>
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const ripple = document.createElement('span');
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple');
+            
+            button.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.ripple-effect').forEach(button => {
+                button.addEventListener('click', createRipple);
+            });
+        });
+        
+        {% block extra_js %}{% endblock %}
+    </script>
+</body>
+</html>

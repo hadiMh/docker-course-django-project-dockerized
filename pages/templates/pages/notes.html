@@ -1,0 +1,387 @@
+{% extends 'base.html' %}
+
+{% block title %}پروژه دوره داکر کدینگ‌یار{% endblock %}
+
+{% block extra_css %}
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .note-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .note-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+        
+        .input-focus:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(-100px);
+            }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+        
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .floating-element {
+            position: absolute;
+            opacity: 0.1;
+            animation: floatAround 15s infinite linear;
+        }
+        
+        @keyframes floatAround {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(100px, -50px) rotate(90deg); }
+            50% { transform: translate(50px, -100px) rotate(180deg); }
+            75% { transform: translate(-50px, -50px) rotate(270deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+        
+        .edit-mode {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-color: #f59e0b;
+        }
+        
+        .delete-confirm {
+            background: linear-gradient(135deg, #fecaca, #fca5a5);
+            border-color: #ef4444;
+        }
+        
+        /* Better button spacing for RTL */
+        .btn-rtl {
+            margin-left: 0.5rem;
+            margin-right: 0;
+        }
+{% endblock %}
+
+{% block content %}
+<div class="gradient-bg min-h-screen">
+    <div class="floating-elements">
+        <div class="floating-element text-6xl text-white" style="top: 10%; left: 10%; animation-delay: 0s;">📝</div>
+        <div class="floating-element text-4xl text-white" style="top: 20%; right: 15%; animation-delay: 2s;">✨</div>
+        <div class="floating-element text-5xl text-white" style="bottom: 30%; left: 20%; animation-delay: 4s;">💡</div>
+        <div class="floating-element text-3xl text-white" style="bottom: 20%; right: 25%; animation-delay: 6s;">📚</div>
+    </div>
+    
+    <header class="relative z-10 p-6">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <a href="/" class="text-white hover:text-gray-200 transition-colors duration-300 p-2">
+                    <i class="fas fa-arrow-right text-xl"></i>
+                </a>
+                <h1 class="text-3xl font-bold text-white">یادداشت‌نویسی</h1>
+            </div>
+            <div class="text-white text-sm flex items-center gap-2">
+                <i class="fas fa-sticky-note"></i>
+                <span id="note-count">0</span>
+                <span>یادداشت</span>
+            </div>
+        </div>
+    </header>
+    
+    <main class="relative z-10 max-w-4xl mx-auto px-6 pb-12">
+        <div class="glass-effect rounded-2xl p-8 mb-8 slide-in">
+            <div class="flex items-stretch gap-4">
+                <div class="flex-1 relative">
+                    <input 
+                        type="text" 
+                        id="note-input" 
+                        placeholder="یادداشت خود را اینجا وارد کنید..." 
+                        class="w-full h-14 px-6 pr-12 text-lg rounded-xl border-2 border-white/30 bg-white/90 focus:outline-none focus:border-blue-400 input-focus transition-all duration-300 text-right input-rtl"
+                        autocomplete="off"
+                    >
+                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        <i class="fas fa-pen text-gray-400"></i>
+                    </div>
+                </div>
+                <button 
+                    id="add-note-btn" 
+                    class="h-14 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 relative overflow-hidden flex items-center ripple-effect"
+                >
+                    <i class="fas fa-plus ml-2"></i>
+                    افزودن یادداشت
+                </button>
+            </div>
+        </div>
+        
+        <div id="notes-container" class="space-y-4">
+        </div>
+        
+        <div id="empty-state" class="text-center py-16 slide-in">
+            <div class="text-6xl mb-4 opacity-50">📝</div>
+            <h3 class="text-xl text-white/80 mb-2">هنوز یادداشتی وجود ندارد</h3>
+            <p class="text-white/60">با افزودن اولین یادداشت خود شروع کنید!</p>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+        class NoteApp {
+            constructor() {
+                this.notes = JSON.parse(localStorage.getItem('notes')) || [];
+                this.noteIdCounter = parseInt(localStorage.getItem('noteIdCounter')) || 1;
+                this.init();
+            }
+            
+            init() {
+                this.renderNotes();
+                this.bindEvents();
+                this.updateNoteCount();
+            }
+            
+            bindEvents() {
+                const input = document.getElementById('note-input');
+                const addBtn = document.getElementById('add-note-btn');
+                
+                addBtn.addEventListener('click', () => this.addNote());
+                
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.addNote();
+                    }
+                });
+            }
+            
+            addNote() {
+                const input = document.getElementById('note-input');
+                const text = input.value.trim();
+                
+                if (!text) {
+                    this.showNotification('لطفاً یادداشتی وارد کنید!', 'warning');
+                    return;
+                }
+                
+                const note = {
+                    id: this.noteIdCounter++,
+                    text: text,
+                    createdAt: new Date().toISOString(),
+                    isEditing: false
+                };
+                
+                this.notes.unshift(note);
+                this.saveNotes();
+                this.renderNotes();
+                this.updateNoteCount();
+                
+                input.value = '';
+                input.focus();
+                
+                this.showNotification('یادداشت با موفقیت افزوده شد!', 'success');
+            }
+            
+            editNote(id) {
+                const note = this.notes.find(n => n.id === id);
+                if (note) {
+                    note.isEditing = true;
+                    this.renderNotes();
+                }
+            }
+            
+            saveEdit(id) {
+                const note = this.notes.find(n => n.id === id);
+                if (note) {
+                    const input = document.querySelector(`#edit-input-${id}`);
+                    const newText = input.value.trim();
+                    
+                    if (!newText) {
+                        this.showNotification('یادداشت نمی‌تواند خالی باشد!', 'warning');
+                        return;
+                    }
+                    
+                    note.text = newText;
+                    note.isEditing = false;
+                    this.saveNotes();
+                    this.renderNotes();
+                    this.showNotification('یادداشت به‌روزرسانی شد!', 'success');
+                }
+            }
+            
+            cancelEdit(id) {
+                const note = this.notes.find(n => n.id === id);
+                if (note) {
+                    note.isEditing = false;
+                    this.renderNotes();
+                }
+            }
+            
+            deleteNote(id) {
+                const noteElement = document.querySelector(`#note-${id}`);
+                noteElement.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    this.notes = this.notes.filter(n => n.id !== id);
+                    this.saveNotes();
+                    this.renderNotes();
+                    this.updateNoteCount();
+                    this.showNotification('یادداشت حذف شد!', 'info');
+                }, 300);
+            }
+            
+            renderNotes() {
+                const container = document.getElementById('notes-container');
+                const emptyState = document.getElementById('empty-state');
+                
+                if (this.notes.length === 0) {
+                    container.innerHTML = '';
+                    emptyState.style.display = 'block';
+                    return;
+                }
+                
+                emptyState.style.display = 'none';
+                
+                container.innerHTML = this.notes.map(note => `
+                    <div id="note-${note.id}" class="note-card rounded-xl p-6 slide-in">
+                        ${note.isEditing ? this.renderEditMode(note) : this.renderViewMode(note)}
+                    </div>
+                `).join('');
+                
+                this.bindNoteEvents();
+            }
+            
+            renderViewMode(note) {
+                const date = new Date(note.createdAt).toLocaleString('fa-IR');
+                return `
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-gray-800 text-lg leading-relaxed mb-3">${this.escapeHtml(note.text)}</p>
+                            <p class="text-gray-500 text-sm flex items-center">
+                                <i class="fas fa-clock ml-1"></i>
+                                ${date}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <button 
+                                onclick="noteApp.editNote(${note.id})" 
+                                class="p-3 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                                title="ویرایش یادداشت"
+                            >
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button 
+                                onclick="noteApp.deleteNote(${note.id})" 
+                                class="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                                title="حذف یادداشت"
+                            >
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            renderEditMode(note) {
+                return `
+                    <div class="edit-mode rounded-lg p-4">
+                        <div class="flex items-stretch gap-3">
+                            <div class="flex-1">
+                                <input 
+                                    type="text" 
+                                    id="edit-input-${note.id}" 
+                                    value="${this.escapeHtml(note.text)}"
+                                    class="w-full h-10 px-4 border-2 border-yellow-300 rounded-lg focus:outline-none focus:border-yellow-400 bg-white text-right input-rtl"
+                                    autocomplete="off"
+                                >
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button 
+                                    onclick="noteApp.saveEdit(${note.id})" 
+                                    class="h-10 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center"
+                                    title="ذخیره تغییرات"
+                                >
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button 
+                                    onclick="noteApp.cancelEdit(${note.id})" 
+                                    class="h-10 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200 flex items-center"
+                                    title="لغو"
+                                >
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            bindNoteEvents() {
+                document.querySelectorAll('[id^="edit-input-"]').forEach(input => {
+                    input.focus();
+                    input.select();
+                });
+            }
+            
+            updateNoteCount() {
+                document.getElementById('note-count').textContent = this.notes.length;
+            }
+            
+            saveNotes() {
+                localStorage.setItem('notes', JSON.stringify(this.notes));
+                localStorage.setItem('noteIdCounter', this.noteIdCounter.toString());
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 slide-in ${
+                    type === 'success' ? 'bg-green-500' :
+                    type === 'warning' ? 'bg-yellow-500' :
+                    type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+                }`;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.add('fade-out');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 3000);
+            }
+        }
+        
+        const noteApp = new NoteApp();
+{% endblock %}
