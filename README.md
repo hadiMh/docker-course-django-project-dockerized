@@ -59,5 +59,3 @@
 - `pages/` - اپ اصلی با view ها و template ها
 - `manage.py` - اسکریپت مدیریت Django
 - `requirements.txt` - وابستگی‌های Python
-
-</div>
