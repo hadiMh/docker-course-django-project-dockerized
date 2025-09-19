@@ -176,7 +176,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-gradient-to-br from-docker-dark via-docker-light to-docker-dark min-h-screen flex items-center justify-center overflow-x-hidden relative">
+<div class="bg-gradient-to-br from-docker-dark via-docker-light to-docker-dark min-h-screen flex flex-col items-center justify-center overflow-x-hidden relative">
     <div class="floating-elements">
         <div class="floating-element text-6xl text-docker-blue" style="top: 10%; left: 10%; animation-delay: 0s;">🐳</div>
         <div class="floating-element text-4xl text-white" style="top: 20%; right: 15%; animation-delay: 2s;">⚡</div>
@@ -185,6 +185,14 @@
     </div>
     
     <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none" id="particles"></div>
+    
+    {% if student_name %}
+    <div class="mb-4">
+        <span class="text-white text-sm font-medium bg-white bg-opacity-10 px-3 py-1 rounded-full backdrop-blur-sm">
+            Hello {{ student_name }} 👋
+        </span>
+    </div>
+    {% endif %}
     
     <div class="relative text-center bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl p-12 md:p-16 shadow-2xl border border-white border-opacity-20 max-w-5xl w-11/12 overflow-hidden shimmer">
         <h1 class="text-4xl text-white mb-5 font-bold text-shadow-lg leading-tight gradient-text fade-in fade-in-delay-1">
